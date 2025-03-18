@@ -3,6 +3,10 @@
 #include <random>
 #include <thread>
 #include <bit>
+#ifdef _DEBUG
+#include <string>
+#include <unordered_map>
+#endif
 #include "Vector.h"
 #include "AABB.h"
 
@@ -13,6 +17,131 @@
 #    include <sched.h>
 #endif
 #include "Random.h"
+
+#ifdef _DEBUG
+namespace
+{
+}
+#endif
+
+void* operator new(std::size_t size, const char* file, int line)
+{
+    return mi_malloc(size);
+}
+
+void* operator new(std::size_t size, const std::nothrow_t&, const char* file, int line) noexcept
+{
+    return mi_malloc(size);
+}
+
+void* operator new(std::size_t size)
+{
+    return mi_malloc(size);
+}
+
+void* operator new(std::size_t size, const std::nothrow_t&) noexcept
+{
+    return mi_malloc(size);
+}
+
+void* operator new(std::size_t size, std::align_val_t alignment)
+{
+    return mi_malloc_aligned(size, (size_t)alignment);
+}
+
+void* operator new(std::size_t size, std::align_val_t alignment, const std::nothrow_t&) noexcept
+{
+    return mi_malloc_aligned(size, (size_t)alignment);
+}
+
+void* operator new[](std::size_t size, const char* file, int line)
+{
+    return mi_malloc(size);
+}
+
+void* operator new[](std::size_t size, const std::nothrow_t&, const char* file, int line) noexcept
+{
+    return mi_malloc(size);
+}
+void* operator new[](std::size_t size)
+{
+    return mi_malloc(size);
+}
+
+void* operator new[](std::size_t size, const std::nothrow_t&) noexcept
+{
+    return mi_malloc(size);
+}
+
+void* operator new[](std::size_t size, std::align_val_t alignment)
+{
+    return mi_malloc_aligned(size, (size_t)alignment);
+}
+
+void* operator new[](std::size_t size, std::align_val_t alignment, const std::nothrow_t&) noexcept
+{
+    return mi_malloc_aligned(size, (size_t)alignment);
+}
+
+void operator delete(void* ptr) noexcept
+{
+    mi_free(ptr);
+}
+
+void operator delete(void* ptr, std::size_t size) noexcept
+{
+    mi_free_size(ptr, size);
+}
+
+void operator delete(void* ptr, std::align_val_t alignment) noexcept
+{
+    mi_free_aligned(ptr, (size_t)alignment);
+}
+
+void operator delete(void* ptr, std::size_t size, std::align_val_t alignment) noexcept
+{
+    mi_free_size_aligned(ptr, size, (size_t)alignment);
+}
+
+void operator delete(void* ptr, const std::nothrow_t&) noexcept
+{
+    mi_free(ptr);
+}
+
+void operator delete(void* ptr, std::align_val_t alignment, const std::nothrow_t&) noexcept
+{
+     mi_free_aligned(ptr, (size_t)alignment);
+}
+
+void operator delete[](void* ptr) noexcept
+{
+    mi_free(ptr);
+}
+
+void operator delete[](void* ptr, std::size_t size) noexcept
+{
+    mi_free_size(ptr, size);
+}
+
+void operator delete[](void* ptr, std::align_val_t alignment) noexcept
+{
+    mi_free_aligned(ptr, (size_t)alignment);
+}
+
+void operator delete[](void* ptr, std::size_t size, std::align_val_t alignment) noexcept
+{
+    mi_free_size_aligned(ptr, size, (size_t)alignment);
+}
+
+void operator delete[](void* ptr, const std::nothrow_t&) noexcept
+{
+    mi_free(ptr);
+}
+
+void operator delete[](void* ptr, std::align_val_t alignment, const std::nothrow_t&) noexcept
+{
+     mi_free_aligned(ptr, (size_t)alignment);
+}
 
 namespace lray
 {

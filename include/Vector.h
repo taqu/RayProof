@@ -9,8 +9,8 @@ namespace lray
 class Vector2
 {
 public:
-    static Vector2 Zero;
-    static Vector2 One;
+    static const Vector2 Zero;
+    static const Vector2 One;
 
     f32 lengthSqr() const;
     f32 length() const;
@@ -40,6 +40,31 @@ f32 dot(const Vector2& x0, const Vector2& x1);
 Vector2 normalize2(const Vector2& x);
 Vector2 safe_normalize2(const Vector2& x, f32 epsilon = RAY_F32_EPSILON);
 Vector2 randomOnDisk(f32 x0, f32 x1);
+
+//--- Vector2u
+//---------------------------------------------
+class Vector2u
+{
+public:
+    static const Vector2u Zero;
+    static const Vector2u One;
+
+    u32 lengthSqr() const;
+    f32 length() const;
+
+    Vector2u& operator+=(const Vector2u& x);
+    Vector2u& operator-=(const Vector2u& x);
+    Vector2u& operator*=(const Vector2u& x);
+    Vector2u& operator/=(const Vector2u& x);
+
+    u32 x_;
+    u32 y_;
+};
+
+Vector2u operator+(const Vector2u& x0, const Vector2u& x1);
+Vector2u operator-(const Vector2u& x0, const Vector2u& x1);
+Vector2u operator*(const Vector2u& x0, const Vector2u& x1);
+Vector2u operator/(const Vector2u& x0, const Vector2u& x1);
 
 //--- Vector3
 //---------------------------------------------

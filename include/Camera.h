@@ -1,9 +1,7 @@
 #ifndef INC_LRAY_CAMERA_H_
 #define INC_LRAY_CAMERA_H_
-#include "Common.h"
-#include "Vector2.h"
-#include "Vector3.h"
-#include "Vector2u.h"
+#include "Core.h"
+#include "Vector.h"
 #include "Ray.h"
 
 namespace lray

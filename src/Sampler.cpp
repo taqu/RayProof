@@ -1,8 +1,46 @@
 #include "Sampler.h"
 #include <cmath>
 
-namespace ray
+namespace lray
 {
+SamplerRandom::SamplerRandom(Random32& rand)
+    :rand_(rand)
+{
+}
+
+SamplerRandom::~SamplerRandom()
+{
+}
+
+f32 SamplerRandom::sample()
+{
+	return rand_.frand();
+}
+
+Vector2 SamplerRandom::sample2()
+{
+	f32 x0 = rand_.frand();
+	f32 x1 = rand_.frand();
+	return {x0,x1};
+}
+
+Vector3 SamplerRandom::sample3()
+{
+	f32 x0 = rand_.frand();
+	f32 x1 = rand_.frand();
+	f32 x2 = rand_.frand();
+	return {x0,x1,x2};
+}
+
+void SamplerRandom::sampleN(uint32_t n, f32* samples)
+{
+	assert(nullptr != samples);
+	for(uint32_t i=0; i<n; ++i){
+		samples[i] = rand_.frand();
+	}
+}
+
+#if 0
 SamplerR2::SamplerR2(u32 seed, f32 lambda)
     :rand_(seed)
 	,lambda_(lambda)
@@ -65,27 +103,6 @@ Vector3 SamplerR2::sample3()
 	p.z_ -= std::floorf(p.z_);
 	return p;
 }
+#endif
 
-Vector2 randomOnDisk(f32 x0, f32 x1)
-{
-// http://psgraphics.blogspot.ch/2011/01/improved-code-for-concentric-map.html
-	f32 r0 = 2.0f*x0 - 1.0f;
-	f32 r1 = 2.0f*x1 - 1.0f;
-	f32 absR0 = abs(r0);
-	f32 absR1 = abs(r1);
-	f32 phi;
-	f32 r;
-	if(absR0 <= F32_EPSILON && absR1 <= F32_EPSILON){
-		phi = 0.0f;
-		r = 0.0f;
-	}else if(absR1 < absR0){
-		phi = (F32_PI/4.0f) * (r1/r0);
-		r = r0;
-	} else {
-		r = r1;
-		phi = (F32_PI/2.0f) - (r0/r1)*(F32_PI/4.0f);
-	}
-
-	return Vector2{r * std::cosf(phi), r * std::sinf(phi)};
-}
-} // namespace ray
+} // namespace lray

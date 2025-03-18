@@ -1,5 +1,6 @@
 #include "Fixed16.h"
 #include <cmath>
+#include <algorithm>
 
 namespace lray
 {
@@ -80,4 +81,26 @@ Fixed16 operator/(const Fixed16& x0, const Fixed16& x1)
     uint32_t r = ((uint32_t)x0.x_ << Fixed16::Frac) / (uint32_t)x1.x_;
     return Fixed16((uint16_t)r);
 }
+
+Fixed16 clamp01(const Fixed16& x)
+{
+    if(Fixed16::One<=x.x_){
+        return Fixed16(Fixed16::One);
+    }
+    return x;
+}
+
+Fixed16 inv_clamp01(const Fixed16& x)
+{
+    if(Fixed16::One<=x.x_){
+        return Fixed16(static_cast<uint16_t>(0));
+    }
+    return Fixed16(static_cast<uint16_t>(Fixed16::One-x.x_));
+}
+
+Fixed16 lerp(const Fixed16& x0, const Fixed16& x1, const Fixed16& t)
+{
+    return (Fixed16(Fixed16::One) - t)*x0 + t*x1;
+}
 } // namespace ray
+

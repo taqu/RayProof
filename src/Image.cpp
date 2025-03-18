@@ -101,10 +101,8 @@ namespace
         for(uint32_t i=0; i<height; ++i){
             for(uint32_t j=0; j<width; ++j){
                 uint32_t index = i*width + j;
-                dst[index].r_ = (uint16_t)((uint16_t)src[index] << Fixed16::Frac);
-                dst[index].g_ = (uint16_t)((uint16_t)src[index] << Fixed16::Frac);
-                dst[index].b_ = (uint16_t)((uint16_t)src[index] << Fixed16::Frac);
-                dst[index].a_ = 255UL << Fixed16::Frac;
+                dst[index].r_ = dst[index].g_ = dst[index].b_ = src[index] * (1.0f/255.0f);
+                dst[index].a_ = static_cast<uint16_t>(1UL << Fixed16::Frac);
             }
         }
     }
@@ -115,10 +113,10 @@ namespace
             for(uint32_t j=0; j<width; ++j){
                 uint32_t index = i*width + j;
                 uint32_t src_index = index*3;
-                dst[index].r_ = (uint16_t)((uint16_t)src[src_index+0] << Fixed16::Frac);
-                dst[index].g_ = (uint16_t)((uint16_t)src[src_index+1] << Fixed16::Frac);
-                dst[index].b_ = (uint16_t)((uint16_t)src[src_index+2] << Fixed16::Frac);
-                dst[index].a_ = 255UL << Fixed16::Frac;
+                dst[index].r_ = src[src_index + 0] * (1.0f/255.0f);
+                dst[index].g_ = src[src_index + 1] * (1.0f/255.0f);
+                dst[index].b_ = src[src_index + 2] * (1.0f/255.0f);
+                dst[index].a_ = static_cast<uint16_t>(1UL << Fixed16::Frac);
             }
         }
     }
@@ -129,10 +127,10 @@ namespace
             for(uint32_t j=0; j<width; ++j){
                 uint32_t index = i*width + j;
                 uint32_t src_index = index*4;
-                dst[index].r_ = (uint16_t)((uint16_t)src[src_index+0] << Fixed16::Frac);
-                dst[index].g_ = (uint16_t)((uint16_t)src[src_index+1] << Fixed16::Frac);
-                dst[index].b_ = (uint16_t)((uint16_t)src[src_index+2] << Fixed16::Frac);
-                dst[index].a_ = (uint16_t)((uint16_t)src[src_index+3] << Fixed16::Frac);
+                dst[index].r_ = src[src_index + 0] * (1.0f/255.0f);
+                dst[index].g_ = src[src_index + 1] * (1.0f/255.0f);
+                dst[index].b_ = src[src_index + 2] * (1.0f/255.0f);
+                dst[index].a_ = src[src_index + 3] * (1.0f/255.0f);
             }
         }
     }
@@ -201,6 +199,56 @@ bool save_bmp(const char* filepath, const Image& img)
     bool r = cppimg::BMP::write(file, static_cast<cppimg::s32>(img.width()), static_cast<cppimg::s32>(img.height()), cppimg::ColorType::RGBA, rgba);
     LRAY_FREE(rgba);
     return r;
+}
+
+bool load_tga(const char* filepath, Image& img)
+{
+    LRAY_ASSERT(nullptr != filepath);
+
+    cppimg::IFStream file;
+    if(!file.open(filepath)) {
+        return false;
+    }
+    cppimg::s32 width = 0, height = 0;
+    cppimg::ColorType type;
+    if(!cppimg::TGA::read(width, height, type, nullptr, file)){
+        return false;
+    }
+    uint32_t size = cppimg::getBytesPerPixel(type) * width * height;
+    uint8_t* data = (uint8_t*)LRAY_MALLOC(size);
+    if(!cppimg::TGA::read(width, height, type, data, file)){
+        LRAY_FREE(data);
+        return false;
+    }
+    img.reset(width, height);
+    convert(width, height, img.pixels_, type, data);
+    LRAY_FREE(data);
+    return true;
+}
+
+bool load_jpg(const char* filepath, Image& img)
+{
+    LRAY_ASSERT(nullptr != filepath);
+
+    cppimg::IFStream file;
+    if(!file.open(filepath)) {
+        return false;
+    }
+    cppimg::s32 width = 0, height = 0;
+    cppimg::ColorType type;
+    if(!cppimg::JPEG::read(width, height, type, nullptr, file)){
+        return false;
+    }
+    uint32_t size = cppimg::getBytesPerPixel(type) * width * height;
+    uint8_t* data = (uint8_t*)LRAY_MALLOC(size);
+    if(!cppimg::JPEG::read(width, height, type, data, file)){
+        LRAY_FREE(data);
+        return false;
+    }
+    img.reset(width, height);
+    convert(width, height, img.pixels_, type, data);
+    LRAY_FREE(data);
+    return true;
 }
 
 bool load_png(const char* filepath, Image& img)

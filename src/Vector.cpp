@@ -5,8 +5,8 @@ namespace lray
 {
 //--- Vector2
 //---------------------------------------------
-Vector2 Vector2::Zero = {0, 0};
-Vector2 Vector2::One = {1, 1};
+const Vector2 Vector2::Zero = {0, 0};
+const Vector2 Vector2::One = {1, 1};
 
 f32 Vector2::lengthSqr() const
 {
@@ -156,7 +156,70 @@ Vector2 randomOnDisk(f32 x0, f32 x1)
         r = r1;
         phi = (F32_PI / 2.0f) - (r0 / r1) * (F32_PI / 4.0f);
     }
-    return {r * ::cosf(phi), r * ::sinf(phi)};
+    return {r * std::cosf(phi), r * std::sinf(phi)};
+}
+
+//--- Vector2u
+//---------------------------------------------
+const Vector2u Vector2u::Zero = {0, 0};
+const Vector2u Vector2u::One = {1, 1};
+
+u32 Vector2u::lengthSqr() const
+{
+    return x_ * x_ + y_ * y_;
+}
+
+f32 Vector2u::length() const
+{
+    return std::sqrtf(lengthSqr());
+}
+
+Vector2u& Vector2u::operator+=(const Vector2u& x)
+{
+    x_ += x.x_;
+    y_ += x.y_;
+    return *this;
+}
+
+Vector2u& Vector2u::operator-=(const Vector2u& x)
+{
+    x_ += x.x_;
+    y_ += x.y_;
+    return *this;
+}
+
+Vector2u& Vector2u::operator*=(const Vector2u& x)
+{
+    x_ += x.x_;
+    y_ += x.y_;
+    return *this;
+}
+
+Vector2u& Vector2u::operator/=(const Vector2u& x)
+{
+    x_ /= x.x_;
+    y_ /= x.y_;
+    return *this;
+}
+
+Vector2u operator+(const Vector2u& x0, const Vector2u& x1)
+{
+    return {x0.x_ + x1.x_, x0.y_ + x1.y_};
+}
+
+Vector2u operator-(const Vector2u& x0, const Vector2u& x1)
+{
+    return {x0.x_ - x1.x_, x0.y_ - x1.y_};
+}
+
+Vector2u operator*(const Vector2u& x0, const Vector2u& x1)
+{
+    return {x0.x_ * x1.x_, x0.y_ * x1.y_};
+}
+
+Vector2u operator/(const Vector2u& x0, const Vector2u& x1)
+{
+    return {x0.x_ / x1.x_, x0.y_ / x1.y_};
 }
 
 //--- Vector3

@@ -20,25 +20,50 @@
 #define LRAY_ASSERT(exp) (void)0
 #endif
 
-#ifdef _DEBUG
-void* operator new(std::size_t size);
-#else
 void* operator new(std::size_t size, const char* file, int line);
-#endif
+void* operator new(std::size_t size, const std::nothrow_t&, const char* file, int line) noexcept;
+void* operator new(std::size_t size);
+void* operator new(std::size_t size, const std::nothrow_t&) noexcept;
 
 void* operator new(std::size_t size, std::align_val_t alignment);
 void* operator new(std::size_t size, const std::nothrow_t&) noexcept;
 void* operator new(std::size_t size, std::align_val_t alignment, const std::nothrow_t&) noexcept;
 
-#ifdef _DEBUG
-void* operator new[](std::size_t size);
-#else
 void* operator new[](std::size_t size, const char* file, int line);
-#endif
+void* operator new[](std::size_t size, const std::nothrow_t&, const char* file, int line) noexcept;
+void* operator new[](std::size_t size);
+void* operator new[](std::size_t size, const std::nothrow_t&) noexcept;
 
 void* operator new[](std::size_t size, std::align_val_t alignment);
 void* operator new[](std::size_t size, const std::nothrow_t&) noexcept;
 void* operator new[](std::size_t size, std::align_val_t alignment, const std::nothrow_t&) noexcept;
+
+void operator delete(void* ptr) noexcept;
+void operator delete(void* ptr, std::size_t size) noexcept; 
+void operator delete(void* ptr, std::align_val_t alignment) noexcept;
+void operator delete(void* ptr, std::size_t size, std::align_val_t alignment) noexcept;
+void operator delete(void* ptr, const std::nothrow_t&) noexcept; 
+void operator delete(void* ptr, std::align_val_t alignment, const std::nothrow_t&) noexcept;
+
+void operator delete[](void* ptr) noexcept;
+void operator delete[](void* ptr, std::size_t size) noexcept; 
+void operator delete[](void* ptr, std::align_val_t alignment) noexcept;
+void operator delete[](void* ptr, std::size_t size, std::align_val_t alignment) noexcept;
+void operator delete[](void* ptr, const std::nothrow_t&) noexcept; 
+void operator delete[](void* ptr, std::align_val_t alignment, const std::nothrow_t&) noexcept;
+
+
+
+#ifdef _DEBUG
+#    define LRAY_NEW new(std::nothrow, __FILE__, __LINE__)
+#else
+#    define LRAY_NEW new(std::nothrow)
+#endif
+#define LRAY_DELETE(ptr) delete (ptr);(ptr)=nullptr
+#define LRAY_DELETE_ARRAY(ptr) delete[] (ptr);(ptr)=nullptr
+
+#define LRAY_DELETE_RAW(ptr) delete (ptr)
+#define LRAY_DELETE_ARRAY_RAW(ptr) delete[] (ptr)
 
 namespace lray
 {

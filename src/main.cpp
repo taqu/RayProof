@@ -77,7 +77,7 @@ void GLWindow::draw()
     GLfloat m[16] = {};
     glUniformMatrix4fv(matrixUniform_, 1, GL_FALSE, (const GLfloat*)m);
     glUniform2fv(matrixUniform_, 16, (const GLfloat*)&m);
-    //glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
     swap_buffers();
 }
 
@@ -128,14 +128,14 @@ void GLWindow::create_program()
     add_output("Shading Language Version=%d.%d\n", Mslv, mslv);
     const char* vss_format =
         "#version %d%d\n"
-        "uniform mat44 m;\n"
+        "uniform mat4 m;\n"
         "in vec4 position;\n"
         "in vec4 colour;\n"
         "out vec4 colourV;\n"
         "void main (void)\n"
         "{\n"
         "   colourV = colour;\n"
-        "   gl_Position = mul(m, position);\n"
+        "   gl_Position = m * position;\n"
         "}";
     char vss_string[300];
     const char* vss = vss_string;
@@ -208,14 +208,15 @@ void GLWindow::create_program()
 
 void GLWindow::add_output(const char* format, ...)
 {
-    // va_list args;
-    // char line_buffer[512];
-    // va_start(args, format);
-    // vsnprintf(line_buffer, sizeof(line_buffer) - 1, format, args);
-    // va_end(args);
+     va_list args;
+     char line_buffer[512];
+     va_start(args, format);
+     vsnprintf(line_buffer, sizeof(line_buffer) - 1, format, args);
+     va_end(args);
     // text_display_->buffer()->append(line_buffer);
     // text_display_->scroll(512, 0);
     // text_display_->redraw();
+     printf("%s\n", line_buffer);
 }
 
 } // namespace
@@ -223,9 +224,11 @@ void GLWindow::add_output(const char* format, ...)
 int main(int argc, char** argv)
 {
     using namespace lray;
-    // Fl_Window* top = new Fl_Window(640, 600);
+    //Fl_Window* win = new Fl_Window(640, 600);
     GLWindow* win = new GLWindow(640, 480, "GL");
     win->end();
     win->show(argc, argv);
-    return Fl::run();
+    int r = Fl::run();
+    Fl::do_widget_deletion();
+    return r;
 }

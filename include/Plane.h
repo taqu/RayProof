@@ -1,6 +1,6 @@
 #ifndef INC_LRAY_PLANE_H_
 #define INC_LRAY_PLANE_H_
-#include "Common.h"
+#include "Core.h"
 #include "Hittable.h"
 #include "Material.h"
 

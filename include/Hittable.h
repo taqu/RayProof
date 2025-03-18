@@ -1,11 +1,11 @@
 #ifndef INC_LRAY_HITTABLE_H_
 #define INC_LRAY_HITTABLE_H_
-#include "Common.h"
+#include "Core.h"
 
 namespace lray
 {
-    class Ray;
-    struct HitRecord;
+class Ray;
+struct HitRecord;
 
 class Hittable
 {

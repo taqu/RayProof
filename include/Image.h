@@ -30,6 +30,8 @@ private:
 
     friend bool load_bmp(const char* filepath, Image& img);
     friend bool save_bmp(const char* filepath, const Image& img);
+    friend bool load_tga(const char* filepath, Image& img);
+    friend bool load_jpg(const char* filepath, Image& img);
     friend bool load_png(const char* filepath, Image& img);
 
     void reset(uint32_t width, uint32_t height);
@@ -45,6 +47,8 @@ void intrusive_ptr_release(Image* pointer);
 
 bool load_bmp(const char* filepath, Image& img);
 bool save_bmp(const char* filepath, const Image& img);
+bool load_tga(const char* filepath, Image& img);
+bool load_jpg(const char* filepath, Image& img);
 bool load_png(const char* filepath, Image& img);
 
 } // namespace ray

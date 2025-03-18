@@ -107,15 +107,15 @@ void Camera::perspectiveLens(u32 width, u32 height, f32 fovy, f32 aperture)
 
 void Camera::lookAt(const Vector3& eye, const Vector3& at, const Vector3& up)
 {
-    forward_ = normalize_safe(at - eye);
+    forward_ = safe_normalize3(at - eye);
     f32 cs = dot(forward_, up);
     if(0.999f < std::abs(cs)){
         up_ = {forward_.z_, forward_.x_, forward_.y_};
     }else{
         up_ = up;
     }
-    right_ = normalize_safe(cross(forward_, up_));
-    up_ = normalize_safe(cross(right_, forward_));
+    right_ = safe_normalize3(cross(forward_, up_));
+    up_ = safe_normalize3(cross(right_, forward_));
     origin_ = eye;
 }
 
@@ -141,7 +141,7 @@ Ray Camera::generate(const Vector2u& x, const Vector2& screenSample, const Vecto
     f32 dy = dy_ * screenToNDC(x.y_, height_, screenSample.y_-0.49999f);
     Vector3 right = dx * right_;
     Vector3 up = dy * up_;
-    Vector3 direction = normalize_safe(right + up + forward_);
+    Vector3 direction = safe_normalize3(right + up + forward_);
     return {origin, direction};
 }
 } // namespace lray

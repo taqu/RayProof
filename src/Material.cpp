@@ -100,10 +100,14 @@ namespace
 
 f32 Material::NsToRoughness(f32 Ns)
 {
-    Ns = std::clamp(Ns, 0.0f, 256.0f);
-    f32 t = Ns / 256.0f;
-    f32 roughness = std::lerp(0.99f, 0.01f, t);
-    return roughness;
+    Ns = std::clamp(Ns, 0.0f, 1.0f);
+    return std::lerp(0.99f, 0.01f, Ns);
+}
+
+Fixed16 Material::NsToRoughness(Fixed16 Ns)
+{
+    Ns = clamp01(Ns);
+    return lerp(Fixed16(0.99f), Fixed16(0.01f), Ns);
 }
 
 Material Material::createLambert(const Vector3& albedo)
@@ -224,7 +228,7 @@ bool Material::scatter(const Ray& ray, const HitRecord& hitRecord, Vector3& atte
     case Model::Lambert: {
         Coordinate coordinate = Coordinate::create(hitRecord.normal_);
         f32 eta[2];
-        Context::get().frand(2, eta);
+        Context::get().getMaterialSampler().sampleN(2, eta);
         Vector3 n = randomOnHemiSphere(eta[0], eta[1]);
         scattered = {hitRecord.position_, coordinate.localToWorld(n)};
         attenuation = albedo_;
@@ -259,7 +263,7 @@ bool Material::scatter(const Ray& ray, const HitRecord& hitRecord, Vector3& atte
         }
         f32 reflectProb = schilick(cosine, refIndex_);
         f32 eta0;
-        Context::get().frand(1, &eta0);
+        Context::get().getMaterialSampler().sampleN(1, &eta0);
         if(eta0 < reflectProb) {
             scattered = {hitRecord.position_, reflected};
         } else {

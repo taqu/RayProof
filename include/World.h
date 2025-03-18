@@ -1,6 +1,6 @@
 #ifndef INC_LRAY_WORLD_H_
 #define INC_LRAY_WORLD_H_
-#include "Common.h"
+#include "Core.h"
 #include "Array.h"
 #include "LQBVH.h"
 #include "BinQBVH.h"

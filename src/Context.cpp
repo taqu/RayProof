@@ -22,7 +22,19 @@ Context& Context::get()
     return *instance_;
 }
 
+ISampler& Context::getScreenSampler()
+{
+    return screenSampler_;
+}
+
+ISampler& Context::getMaterialSampler()
+{
+    return materialSampler_;
+}
+
 Context::Context()
+    :screenSampler_(random_)
+    ,materialSampler_(random_)
 {
     std::random_device device;
     random_.srand(device());

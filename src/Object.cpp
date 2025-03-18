@@ -24,7 +24,7 @@ namespace
     {
         Vector3 d0 = p1 - p0;
         Vector3 d1 = p2 - p1;
-        return normalize_safe(cross(d0, d1));
+        return safe_normalize3(cross(d0, d1));
     }
 
     void assign(lray::Vector3& dst, const cppobj::Vector3& src)
@@ -49,45 +49,45 @@ namespace
         return t;
     }
 
-    Color16 convertDisolveToTransparency(u32 x,u32 y, const Texture& tex)
+    RGBA16 convertDisolveToTransparency(u32 x,u32 y, const Texture& tex)
     {
-        Color32 c = tex.get(x, y);
-        c.r_ = clamp01(1.0f-c.r_);
-        c.g_ = clamp01(1.0f-c.g_);
-        c.b_ = clamp01(1.0f-c.b_);
+        RGBA16 c = tex.get(x, y);
+        c.r_ = inv_clamp01(c.r_);
+        c.g_ = inv_clamp01(c.g_);
+        c.b_ = inv_clamp01(c.b_);
         c.a_ = clamp01(c.a_);
-        return toColor16(c);
+        return c;
     }
 
-    void disolveToTransparency(IntrusivePtr<Texture>& tex)
+    void disolveToTransparency(Texture& tex)
     {
-        if(!tex){
+        if(!tex.valid()){
             return;
         }
-        tex->convert(convertDisolveToTransparency);
+        tex.convert(convertDisolveToTransparency);
     }
 
-    Color16 convertNsToRoughness(u32 x,u32 y, const Texture& tex)
+    RGBA16 convertNsToRoughness(u32 x,u32 y, const Texture& tex)
     {
-        Color32 c = tex.get(x, y);
-        c.r_ = clamp01(Material::NsToRoughness(c.r_*256.0f));
-        c.g_ = clamp01(Material::NsToRoughness(c.g_*256.0f));
-        c.b_ = clamp01(Material::NsToRoughness(c.b_*256.0f));
+        RGBA16 c = tex.get(x, y);
+        c.r_ = Material::NsToRoughness(c.r_);
+        c.g_ = Material::NsToRoughness(c.g_);
+        c.b_ = Material::NsToRoughness(c.b_);
         c.a_ = clamp01(c.a_);
-        return toColor16(c);
+        return c;
     }
 
-    void NsToRoughness(IntrusivePtr<Texture>& tex)
+    void NsToRoughness(Texture& tex)
     {
-        if(!tex){
+        if(!tex.valid()){
             return;
         }
-        tex->convert(convertNsToRoughness);
+        tex.convert(convertNsToRoughness);
     }
 
-    Color16 convertBumpToNormap(u32 x,u32 y, const Texture& tex)
+    RGBA16 convertBumpToNormap(u32 x,u32 y, const Texture& tex)
     {
-        Color32 pixels[9];
+        RGBA16 pixels[9];
         tex.get9pixels(pixels, x, y);
         f32 grays[9];
         for(u32 i=0; i<9; ++i){
@@ -106,25 +106,31 @@ namespace
         f32 gx = conv2d(9, sobelx, grays);
         f32 gy = conv2d(9, sobely, grays);
         Vector3 n(gx,gy,1.0f);
-        n = 0.5f*normalize(n) + Vector3(0.5f,0.5f,0.5f);
-        Color32 c = {clamp01(n.x_), clamp01(n.y_), clamp01(n.z_), 1.0f};
-        return toColor16(c);
+        n = 0.5f*normalize3(n) + Vector3(0.5f,0.5f,0.5f);
+        RGBA16 rgba;
+        rgba.r_ = clamp01(n.x_);
+        rgba.g_ = clamp01(n.y_);
+        rgba.b_ = clamp01(n.z_);
+        rgba.a_ = static_cast<uint16_t>(0);
+        return rgba;
     }
 
-    void bumpToNormal(IntrusivePtr<Texture>& tex)
+    void bumpToNormal(Texture& tex)
     {
-        if(!tex){
+        if(!tex.valid()){
             return;
         }
-        tex->convert(convertBumpToNormap);
+        tex.convert(convertBumpToNormap);
     }
     
-    IntrusivePtr<Texture> loadTexture(const std::string& path)
+    Texture loadTexture(const std::string& path)
     {
         std::filesystem::path filepath(path);
         std::filesystem::path fullpath = std::filesystem::current_path();
         fullpath /= filepath;
-        return Texture::load(fullpath.string().c_str());
+        Texture texture;
+        Texture::load(texture, (const char*)fullpath.c_str());
+        return texture;
     }
 
     void loadTextures(Material& dst, cppobj::Material& src)
@@ -246,7 +252,7 @@ void Object::recalcNormals()
         vertices_[v2].normal_ += n;
     }
     for(u32 i=0; i<vertices_.size(); ++i){
-        vertices_[i].normal_ = normalize_safe(vertices_[i].normal_);
+        vertices_[i].normal_ = safe_normalize3(vertices_[i].normal_);
     }
 }
 
@@ -286,7 +292,7 @@ int Object::getNumFaces(const SMikkTSpaceContext* context)
     return static_cast<int>(obj->faces_.size());
 }
 
-int Object::getNumVerticesOfFace(const SMikkTSpaceContext* context, const int face)
+int Object::getNumVerticesOfFace(const SMikkTSpaceContext* /*context*/, const int /*face*/)
 {
     return 3;
 }
@@ -352,7 +358,7 @@ bool Object::testRay(f32& t, u32 face, const Ray& ray, f32 tmin, f32 tmax) const
     Vector3 tvec;
     f32 discr = dot(c, d0);
     Vector3 qvec;
-    if(Epsilon < discr) {
+    if(RAY_F32_EPSILON < discr) {
         // front
         tvec = ray.origin_ - v0;
         f32 v = dot(tvec, c);
@@ -372,7 +378,7 @@ bool Object::testRay(f32& t, u32 face, const Ray& ray, f32 tmin, f32 tmax) const
 
     t = dot(d1, qvec);
     t *= invDiscr;
-    return true;
+    return tmin<=t && t<=tmax;
 }
 
 bool Object::testRayBoth(f32& t, u32 face, const Ray& ray, f32 tmin, f32 tmax) const
@@ -388,7 +394,7 @@ bool Object::testRayBoth(f32& t, u32 face, const Ray& ray, f32 tmin, f32 tmax) c
     Vector3 tvec;
     f32 discr = dot(c, d0);
     Vector3 qvec;
-    if(Epsilon < discr) {
+    if(RAY_F32_EPSILON < discr) {
         // front
         tvec = ray.origin_ - v0;
         f32 v = dot(tvec, c);
@@ -401,7 +407,7 @@ bool Object::testRayBoth(f32& t, u32 face, const Ray& ray, f32 tmin, f32 tmax) c
             return false;
         }
 
-    } else if(discr < -Epsilon) {
+    } else if(discr < -RAY_F32_EPSILON) {
         // behind
         tvec = ray.origin_ - v0;
         f32 v = dot(tvec, c);
@@ -422,7 +428,7 @@ bool Object::testRayBoth(f32& t, u32 face, const Ray& ray, f32 tmin, f32 tmax) c
 
     t = dot(d1, qvec);
     t *= invDiscr;
-    return true;
+    return tmin<=t && t<=tmax;
 }
 
 void intrusive_ptr_addref(Object* pointer)
@@ -434,7 +440,7 @@ void intrusive_ptr_release(Object* pointer)
 {
     pointer->refCount_ -= 1;
     if(pointer->refCount_ <= 0) {
-        delete pointer;
+        LRAY_DELETE_RAW(pointer);
     }
 }
 

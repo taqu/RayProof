@@ -7,6 +7,7 @@ namespace lray
 struct Fixed16
 {
     inline static constexpr uint16_t Frac = 6;
+    inline static constexpr uint16_t One = static_cast<uint16_t>(0x01UL<<Frac);
 
     Fixed16();
     explicit Fixed16(uint16_t x);
@@ -30,6 +31,8 @@ struct Fixed16
     friend Fixed16 operator*(const Fixed16& x0, const Fixed16& x1);
     friend Fixed16 operator/(const Fixed16& x0, const Fixed16& x1);
 
+    friend Fixed16 lerp(const Fixed16& x0, const Fixed16& x1, const Fixed16& t);
+
     uint16_t x_;
 };
 
@@ -46,5 +49,10 @@ Fixed16 operator-(const Fixed16& x0, const Fixed16& x1);
 
 Fixed16 operator*(const Fixed16& x0, const Fixed16& x1);
 Fixed16 operator/(const Fixed16& x0, const Fixed16& x1);
+
+Fixed16 clamp01(const Fixed16& x);
+Fixed16 inv_clamp01(const Fixed16& x);
+
+Fixed16 lerp(const Fixed16& x0, const Fixed16& x1, const Fixed16& t);
 } // namespace ray
 #endif // INC_LRAY_FIXED16_H_

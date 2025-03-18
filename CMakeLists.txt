@@ -11,16 +11,9 @@ set(HEADER_DIR ${PROJECT_ROOT}/include)
 set(SOURCE_DIR ${PROJECT_ROOT}/src)
 set(THIRDPARTY_DIR ${PROJECT_ROOT}/thirdparty)
 
-if(WIN32)
-    set(FLTK_ROOT ${THIRDPARTY_DIR}/fltk/win)
-elseif(UNIX)
-    set(FLTK_ROOT ${THIRDPARTY_DIR}/fltk/linux)
-else()
-endif()
-include_directories(AFTER ${FLTK_ROOT}/include)
-link_directories(AFTER ${FLTK_ROOT}/lib)
-
 # build thirdparties
+
+IF(NOT EXISTS ${THIRDPARTY_DIR}/CMakeLists.txt)
 configure_file(${PROJECT_ROOT}/CMakeLists_Thirdparty.txt.in ${THIRDPARTY_DIR}/CMakeLists.txt)
 
 execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
@@ -43,6 +36,28 @@ execute_process(COMMAND ${CMAKE_COMMAND} --build . --config Release --target ALL
 if(result)
     message(FATAL_ERROR "Building release external projects failed: ${result}")
 endif()
+endif()
+
+############################################################
+# fltk
+set(FLTK_ROOT ${THIRDPARTY_DIR}/fltk)
+set(FLTK_INCLUDE ${FLTK_ROOT}/include)
+set(FLTK_LIB ${FLTK_ROOT}/lib)
+
+include_directories(AFTER ${FLTK_INCLUDE})
+link_directories(AFTER ${FLTK_LIB})
+
+add_library(FLTK MODULE IMPORTED)
+set_target_properties(FLTK PROPERTIES IMPORTED_LOCATION_DEBUG "fltkd.lib" IMPORTED_LOCATION_RELEASE "fltk.lib")
+
+add_library(FLTK_FORMS MODULE IMPORTED)
+set_target_properties(FLTK_FORMS PROPERTIES IMPORTED_LOCATION_DEBUG "fltk_formsd.lib" IMPORTED_LOCATION_RELEASE "fltk_forms.lib")
+# fltk_gl.lib fltk_images.lib fltk_jpeg.lib fltk_png.lib fltk_z.lib
+add_library(FLTK_GL MODULE IMPORTED)
+set_target_properties(FLTK_GL PROPERTIES IMPORTED_LOCATION_DEBUG "fltk_gld.lib" IMPORTED_LOCATION_RELEASE "fltk_gl.lib")
+
+add_library(FLTK_IMAGES MODULE IMPORTED)
+set_target_properties(FLTK_IMAGES PROPERTIES IMPORTED_LOCATION_DEBUG "fltk_imagesd.lib" IMPORTED_LOCATION_RELEASE "fltk_images.lib")
 
 ############################################################
 # mimalloc
@@ -51,11 +66,27 @@ set(MIMALLOC_INCLUDE ${MIMALLOC_ROOT}/include/mimalloc-2.1)
 set(MIMALLOC_LIB ${MIMALLOC_ROOT}/lib/mimalloc-2.1)
 
 include_directories(AFTER ${MIMALLOC_INCLUDE})
-
 link_directories(AFTER ${MIMALLOC_LIB})
 
 add_library(MIMALLOC MODULE IMPORTED)
 set_target_properties(MIMALLOC PROPERTIES IMPORTED_LOCATION_DEBUG "mimalloc-staticd.lib" IMPORTED_LOCATION_RELEASE "mimalloc-static.lib")
+
+############################################################
+# OpenGL
+add_library(GL MODULE IMPORTED)
+set_target_properties(GL PROPERTIES IMPORTED_LOCATION_DEBUG "opengl32.lib" IMPORTED_LOCATION_RELEASE "opengl32.lib")
+
+############################################################
+# glew
+set(GLEW_ROOT ${THIRDPARTY_DIR}/glew)
+set(GLEW_INCLUDE ${GLEW_ROOT}/include)
+set(GLEW_LIB ${GLEW_ROOT}/lib)
+
+include_directories(AFTER ${GLEW_INCLUDE})
+link_directories(AFTER ${GLEW_LIB})
+
+add_library(GLEW MODULE IMPORTED)
+set_target_properties(GLEW PROPERTIES IMPORTED_LOCATION_DEBUG "libglew32d.lib" IMPORTED_LOCATION_RELEASE "libglew32.lib")
 
 ########################################################################
 # Sources
@@ -84,6 +115,7 @@ set(HEADERS
     "${HEADER_DIR}/Vertex.h"
     "${HEADER_DIR}/Texture.h"
     "${HEADER_DIR}/Image.h"
+    "${HEADER_DIR}/Sampler.h"
     "${HEADER_DIR}/Object.h"
     "${HEADER_DIR}/Color.h"
     "${HEADER_DIR}/World.h"
@@ -100,7 +132,6 @@ set(SOURCES
     "${SOURCE_DIR}/Coordinate.cpp"
     "${SOURCE_DIR}/cppimg.cpp"
     "${SOURCE_DIR}/cppobj.cpp"
-    "${SOURCE_DIR}/szlib.cpp"
     "${SOURCE_DIR}/Random.cpp"
     "${SOURCE_DIR}/RadixSort.cpp"
     "${SOURCE_DIR}/Material.cpp"
@@ -110,6 +141,7 @@ set(SOURCES
     "${SOURCE_DIR}/BinQBVH.cpp"
     "${SOURCE_DIR}/Texture.cpp"
     "${SOURCE_DIR}/Image.cpp"
+    "${SOURCE_DIR}/Sampler.cpp"
     "${SOURCE_DIR}/Object.cpp"
     "${SOURCE_DIR}/Color.cpp"
     "${SOURCE_DIR}/World.cpp"
@@ -129,7 +161,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE "${OUTPUT_DIRECTORY}")
 add_executable(${PROJECT_NAME} ${FILES})
 
 if(MSVC)
-    set(DEFAULT_CXX_FLAGS "/DWIN32 /D_WINDOWS /D_UNICODE /DUNICODE /W4 /WX- /nologo /fp:precise /arch:AVX /Zc:wchar_t /TP /Gd /std:c++20 /std:c11")
+    set(DEFAULT_CXX_FLAGS "/DWIN32 /D_WINDOWS /D_UNICODE /DUNICODE /DGLEW_STATIC /W4 /WX- /nologo /fp:precise /arch:AVX /Zc:wchar_t /TP /Gd /std:c++20 /std:c11")
     if(MSVC_VERSION VERSION_LESS_EQUAL "1900")
         set(DEFAULT_CXX_FLAGS "${DEFAULT_CXX_FLAGS} /Zc:__cplusplus /std:c++latest")
     else()
@@ -138,12 +170,12 @@ if(MSVC)
     set(CMAKE_CXX_FLAGS "${DEFAULT_CXX_FLAGS}")
     set(CMAKE_CXX_FLAGS_DEBUG "/D_DEBUG /MDd /Zi /Ob0 /Od /RTC1 /Gy /GR- /GS /Gm- /EHsc")
     set(CMAKE_CXX_FLAGS_RELEASE "/MD /O2 /Oi /GL /GR- /DNDEBUG /EHsc-")
-    target_link_libraries(${PROJECT_NAME} MIMALLOC fltk.lib fltk_forms.lib fltk_images.lib fltk_jpeg.lib fltk_png.lib fltk_z.lib)
+    target_link_libraries(${PROJECT_NAME} MIMALLOC GL GLEW FLTK FLTK_FORMS FLTK_GL FLTK_IMAGES gdiplus.lib ws2_32.lib user32.lib comctl32.lib)
 
 elseif(UNIX)
-    set(DEFAULT_CXX_FLAGS "-Wall -O2 -std=c++20 -std=gnu++20 -march=x86-64-v3 -fno-exceptions")
+    set(DEFAULT_CXX_FLAGS "-DDGLEW_STATIC -Wall -O2 -std=c++20 -std=gnu++20 -march=x86-64-v3 -fno-exceptions")
     set(CMAKE_CXX_FLAGS "${DEFAULT_CXX_FLAGS}")
-    target_link_libraries(${PROJECT_NAME} MIMALLOC libfltk.a libfltk_forms.a libfltk_images.a libfltk_jpeg.a libfltk_png.a libfltk_z.a libX11.a libXext.a libxcb.a libXau.a libXdmcp.a)
+    target_link_libraries(${PROJECT_NAME} MIMALLOC GL GLEW libfltk.a libfltk_forms.a fltk_gl.a libfltk_images.a libfltk_jpeg.a libfltk_png.a libfltk_z.a libX11.a libXext.a libxcb.a libXau.a libXdmcp.a)
 elseif(APPLE)
 elseif(APPLE)
 endif()

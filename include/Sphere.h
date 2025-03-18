@@ -1,12 +1,13 @@
 #ifndef INC_LRAY_SPHERE_H_
 #define INC_LRAY_SPHERE_H_
-#include "Common.h"
+#include "Core.h"
 #include "Hittable.h"
-#include "Vector3.h"
+#include "Vector.h"
 
 namespace lray
 {
-    struct HitRecord;
+struct HitRecord;
+
 class Sphere: public Hittable
 {
 public:

@@ -21,6 +21,17 @@ RGBA ToRGBA(const RGBA16& x)
     return {r, g, b, a};
 }
 
+RGBAF32 ToRGBAF32(const RGBA16& x)
+{
+    __m128i mi = _mm_loadl_epi64((const __m128i*)&x);
+    mi = _mm_cvtepu16_epi32(mi);
+    __m128 mf = _mm_cvtepi32_ps(mi);
+    mf = _mm_div_ps(mf, _mm_set1_ps((float)(1 << Fixed16::Frac)));
+    alignas(16) RGBAF32 r;
+    _mm_store_ps((float*)&r, mf);
+    return r;
+}
+
 float LinearToSRGB(float x)
 {
     return x <= 0.0031308f ? 12.92f * x : 1.055f * ::powf(x, 1.0f / 2.4f) - 0.055f;
@@ -47,5 +58,13 @@ RGBA16 SRGBToLinear(const RGBA16& x)
     Fixed16 b(SRGBToLinear((float)x.b_));
     Fixed16 a(SRGBToLinear((float)x.a_));
     return {r, g, b, a};
+}
+
+f32 toGray(const RGBA16& x)
+{
+    f32 r = x.r_;
+    f32 g = x.g_;
+    f32 b = x.b_;
+    return 0.299f*r + 0.587f*g + 0.114f*b;
 }
 } // namespace lray

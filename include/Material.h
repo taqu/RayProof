@@ -1,6 +1,7 @@
 #ifndef INC_LRAY_MATERIAL_H_
 #define INC_LRAY_MATERIAL_H_
 #include "Core.h"
+#include "Fixed16.h"
 #include "Vector.h"
 #include "Texture.h"
 
@@ -21,6 +22,7 @@ namespace lray
 	{
     public:
 		static f32 NsToRoughness(f32 Ns);
+		static Fixed16 NsToRoughness(Fixed16 Ns);
 
         static Material createLambert(const Vector3& albedo);
 		static Material createMetal(const Vector3& albedo, f32 roughness, f32 metallic);
@@ -47,13 +49,13 @@ namespace lray
 		f32 roughness_;
 		f32 metallic_;
 		f32 refIndex_;
-		IntrusivePtr<Texture> texAmbient_;
-		IntrusivePtr<Texture> texAlbedo_;
-		IntrusivePtr<Texture> texSpecular_;
-		IntrusivePtr<Texture> texEmissive_;
-		IntrusivePtr<Texture> texRoughness_;
-		IntrusivePtr<Texture> texTransparency_;
-		IntrusivePtr<Texture> texNormal_;
+		Texture texAmbient_;
+		Texture texAlbedo_;
+		Texture texSpecular_;
+		Texture texEmissive_;
+		Texture texRoughness_;
+		Texture texTransparency_;
+		Texture texNormal_;
 	};
 }
 #endif //INC_LRAY_MATERIAL_H_

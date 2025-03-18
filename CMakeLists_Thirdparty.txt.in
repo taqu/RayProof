@@ -10,3 +10,17 @@ ExternalProject_Add(mimalloc
         "-DCMAKE_DEBUG_POSTFIX=d"
 )
 
+ExternalProject_Add(glew
+    URL https://github.com/nigels-com/glew/releases/download/glew-2.2.0/glew-2.2.0.zip
+    PREFIX "${THIRDPARTY_DIR}/glew"
+    CMAKE_ARGS "-DCMAKE_INSTALL_PREFIX=${THIRDPARTY_DIR}/glew" "-DCMAKE_DEBUG_POSTFIX=d"
+    SOURCE_SUBDIR "build/cmake"
+)
+
+ExternalProject_Add(fltk
+    GIT_REPOSITORY https://github.com/fltk/fltk.git
+    GIT_TAG release-1.4.2
+    PREFIX "${THIRDPARTY_DIR}/fltk"
+    CMAKE_ARGS "-DCMAKE_INSTALL_PREFIX=${THIRDPARTY_DIR}/fltk"
+)
+

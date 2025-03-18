@@ -1,19 +1,33 @@
-#ifndef INC_RAY_SAMPLER_H_
-#define INC_RAY_SAMPLER_H_
+#ifndef INC_LRAY_SAMPLER_H_
+#define INC_LRAY_SAMPLER_H_
 #include "Vector.h"
 #include "Random.h"
 
-namespace ray
+namespace lray
 {
 class ISampler
 {
 public:
-    virtual void next() = 0;
     virtual f32 sample() = 0;
     virtual Vector2 sample2() = 0;
     virtual Vector3 sample3() = 0;
+    virtual void sampleN(uint32_t n, f32* samples) = 0;
 };
 
+class SamplerRandom : public ISampler
+{
+public:
+    explicit SamplerRandom(Random32& rand);
+    ~SamplerRandom();
+    virtual f32 sample() override;
+    virtual Vector2 sample2() override;
+    virtual Vector3 sample3() override;
+    virtual void sampleN(uint32_t n, f32* samples) override;
+private:
+    Random32& rand_;
+};
+
+#if 0
 /**
 http://extremelearning.com.au/unreasonable-effectiveness-of-quasirandom-sequences/
 */
@@ -35,12 +49,11 @@ public:
     virtual Vector2 sample2() override;
     virtual Vector3 sample3() override;
 private:
-    RandomPCG32 rand_;
+    Random32& rand_;
     f32 lambda_;
     uint32_t n_;
 };
-
-Vector2 randomOnDisk(f32 x0, f32 x1);
+#endif
 
 } // namespace ray
-#endif // INC_RAY_SAMPLER_H_
+#endif // INC_LRAY_SAMPLER_H_
